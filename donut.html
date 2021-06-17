@@ -90,25 +90,25 @@
 					this.B = Math.random();
 				}
 				
-				setRevolutionMatrix(alpha) {
+				setRevolutionMatrix(cosalpha,sinalpha) {
 					let v = this.revolution.v;
-					v[0][0]= Math.cos(alpha); 	v[0][1]= 0; 	v[0][2]= Math.sin(alpha);
-					v[1][0]= 0; 								v[1][1]= 1; 	v[1][2]= 0;
-					v[2][0]= -Math.sin(alpha); 	v[2][1]= 0; 	v[2][2]= Math.cos(alpha);
+					v[0][0]= cosalpha; 	v[0][1]= 0;	v[0][2]= sinalpha;
+					v[1][0]= 0; 				v[1][1]= 1; v[1][2]= 0;
+					v[2][0]= -sinalpha; v[2][1]= 0; v[2][2]= cosalpha;
 				}
 				
-				setRotationA(alpha) {
+				setRotationA(cosalpha,sinalpha) {
 					let v = this.rotationA.v;
-					v[0][0]= 1;		v[0][1]= 0; 								v[0][2]= 0;
-					v[1][0]= 0; 	v[1][1]= Math.cos(alpha); 	v[1][2]= Math.sin(alpha);
-					v[2][0]= 0; 	v[2][1]= -Math.sin(alpha); 	v[2][2]= Math.cos(alpha);
+					v[0][0]= 1;		v[0][1]= 0; 				v[0][2]= 0;
+					v[1][0]= 0; 	v[1][1]= cosalpha; 	v[1][2]= sinalpha;
+					v[2][0]= 0; 	v[2][1]= -sinalpha; v[2][2]= cosalpha;
 				}
 				
-				setRotationB(alpha) {
+				setRotationB(cosalpha,sinalpha) {
 					let v = this.rotationB.v;
-					v[0][0]= Math.cos(alpha); 	v[0][1]= Math.sin(alpha); v[0][2]= 0;
-					v[1][0]= -Math.sin(alpha); 	v[1][1]= Math.cos(alpha); v[1][2]= 0;
-					v[2][0]= 0; 								v[2][1]= 0; 							v[2][2]= 1;
+					v[0][0]= cosalpha; 	v[0][1]= sinalpha; v[0][2]= 0;
+					v[1][0]= -sinalpha; v[1][1]= cosalpha; v[1][2]= 0;
+					v[2][0]= 0; 				v[2][1]= 0; 			 v[2][2]= 1;
 				}
 				
 				draw(width,height) {
@@ -116,9 +116,9 @@
 					this.A += 0.048;
 					this.B += 0.056;
 					for (let alpha = 0; alpha < 6.28; alpha += this.step) {
-						this.setRevolutionMatrix(alpha);
-						this.setRotationA(this.A);
-						this.setRotationB(this.B);
+						this.setRevolutionMatrix(Math.cos(alpha),Math.sin(alpha));
+						this.setRotationA(Math.cos(this.A),Math.sin(this.A));
+						this.setRotationB(Math.cos(this.B),Math.sin(this.B));
 						for (let teta = 0; teta < 6.28; teta += this.step) {
 							// init
 							let point = new Vector();
