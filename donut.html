@@ -113,8 +113,8 @@
 				
 				draw(width,height) {
 					let buffer = {}
-					this.A += 0.028;
-					this.B += 0.033;
+					this.A += 0.048;
+					this.B += 0.056;
 					for (let alpha = 0; alpha < 6.28; alpha += this.step) {
 						this.setRevolutionMatrix(alpha);
 						this.setRotationA(this.A);
