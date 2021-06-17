@@ -1,0 +1,187 @@
+<html>
+	<head>
+		<title>Donut</title>
+	</head>
+	<body style="background-color:black;">
+		<style>
+			pre {
+				color:green; font-weight: bold;
+			}
+		</style>
+		<pre id="content"></pre>
+		<script type="text/javascript">
+
+			class Vector {
+				constructor() {
+					this.x = this.y = this.z = 0;
+				}
+				
+				add(other) {
+					let v = new Vector();
+					v.x = this.x + other.x;
+					v.y = this.y + other.y;
+					v.z = this.z + other.z;
+					return v;
+				}
+				
+				sub(other) {
+					let v = new Vector();
+					v.x = this.x - other.x;
+					v.y = this.y - other.y;
+					v.z = this.z - other.z;
+					return v;
+				}
+			}
+
+			class Matrix {
+				constructor() {
+					this.v = [
+						[1,0,0],
+						[0,1,0],
+						[0,0,1]
+					];
+				}
+				
+				static multCell(m1, m2, row, col) {
+					let cell = 0;
+					for (let i = 0; i < 3; i++) {
+							cell += m1[row][i] * m2[i][col];
+					}
+					return cell;
+				}
+				
+				mult(other) {
+					if (other instanceof Matrix) return this.multMatrix(other);
+					if (other instanceof Vector) return this.multVector(other);
+					return null;
+				}
+
+				multMatrix(other) {
+					let m = new Matrix();
+					
+					for(let y=0; y<3; y++) {
+						for(let x=0; x<3; x++) {
+							m.v[y][x] = Matrix.multCell(this.v, other.v, y, x);
+						}
+					}
+						
+					return m;
+				}
+				
+				multVector(other) {
+					let v = new Vector();
+					v.x = this.v[0][0]*other.x+this.v[0][1]*other.y+this.v[0][2]*other.z;
+					v.y = this.v[1][0]*other.x+this.v[1][1]*other.y+this.v[1][2]*other.z;
+					v.z = this.v[2][0]*other.x+this.v[2][1]*other.y+this.v[2][2]*other.z;
+					return v;
+				}
+			}
+
+			class Donut {
+				constructor(center, R1, R2) {
+					this.center = center;
+					this.R1 = R1;
+					this.R2 = R2;
+					this.revolution = new Matrix();
+					this.rotationA = new Matrix();
+					this.rotationB = new Matrix();
+					this.step = 0.02;
+					this.A = Math.random();
+					this.B = Math.random();
+				}
+				
+				setRevolutionMatrix(alpha) {
+					let v = this.revolution.v;
+					v[0][0]= Math.cos(alpha); 	v[0][1]= 0; 	v[0][2]= Math.sin(alpha);
+					v[1][0]= 0; 								v[1][1]= 1; 	v[1][2]= 0;
+					v[2][0]= -Math.sin(alpha); 	v[2][1]= 0; 	v[2][2]= Math.cos(alpha);
+				}
+				
+				setRotationA(alpha) {
+					let v = this.rotationA.v;
+					v[0][0]= 1;		v[0][1]= 0; 								v[0][2]= 0;
+					v[1][0]= 0; 	v[1][1]= Math.cos(alpha); 	v[1][2]= Math.sin(alpha);
+					v[2][0]= 0; 	v[2][1]= -Math.sin(alpha); 	v[2][2]= Math.cos(alpha);
+				}
+				
+				setRotationB(alpha) {
+					let v = this.rotationB.v;
+					v[0][0]= Math.cos(alpha); 	v[0][1]= Math.sin(alpha); v[0][2]= 0;
+					v[1][0]= -Math.sin(alpha); 	v[1][1]= Math.cos(alpha); v[1][2]= 0;
+					v[2][0]= 0; 								v[2][1]= 0; 							v[2][2]= 1;
+				}
+				
+				draw(width,height) {
+					let buffer = {}
+					this.A += 0.008;
+					this.B += 0.013;
+					for (let alpha = 0; alpha < 6.28; alpha += this.step) {
+						this.setRevolutionMatrix(alpha);
+						this.setRotationA(this.A);
+						this.setRotationB(this.B);
+						for (let teta = 0; teta < 6.28; teta += this.step) {
+							// init
+							let point = new Vector();
+							point.x = this.R1 + this.R2 * Math.cos(teta);
+							point.y = this.R2 * Math.sin(teta);
+
+							// transform
+							point = this.revolution.mult(point);         
+							point = this.rotationA.mult(point);
+							point = this.rotationB.mult(point);
+							
+							// compute normal
+							let innerCenter = new Vector();
+							innerCenter.x = this.R1;
+							innerCenter = this.revolution.mult(innerCenter);         
+							innerCenter = this.rotationA.mult(innerCenter);
+							innerCenter = this.rotationB.mult(innerCenter);
+							let normal = point.sub(innerCenter);
+							if (normal.z < 0) continue;	
+							point = point.add(this.center);
+							if (point.x < 0 || point.y < 0) continue;
+
+							// 2D coordinates, depth, brightness
+							let brightness = normal.z / this.R2; // [0..1]						
+							let x = Math.floor(point.x); let y = Math.floor(point.y); let depth = point.z;
+
+							let data = buffer[`${x}:${y}`];
+							if (data) {
+								if (data[1] > depth) { // stencil test
+									brightness = data[0];
+									depth = data[1];
+								}
+							} 
+							buffer[`${x}:${y}`] = [brightness,depth];
+						}
+					}
+
+					// process buffer to text
+					let text = '';
+					let luminanceIndex = '.,-~:;=!*#$@';
+					for (let y = 0 ; y < height; y+=2) {
+						for (let x = 0 ; x < width; x++) {
+							let data = buffer[`${x}:${y}`];
+							if (data) {
+								let brightness = data[0];
+								let luminance = Math.floor(brightness * luminanceIndex.length);
+								text += luminanceIndex[luminance];
+							} else {
+								text += ' ';
+							}
+						}
+						text += '\n';
+					}	
+					document.getElementById("content").innerHTML = text;
+				}
+			}
+
+			let width = 60;
+			let height = 60;
+			let center = new Vector();
+			center.x = width/2; center.y= height/2;
+			let donut = new Donut(center,width/3,width/6);
+			setInterval(()=>{donut.draw(width,height)}, 30);
+		</script>
+	</body>
+</html>
