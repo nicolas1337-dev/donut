@@ -176,10 +176,12 @@
 				}
 			}
 
-			// Create donut and draw
+			// Font size
 			const urlParams = new URLSearchParams(window.location.search);
-			const sizeParam = urlParams.get('size');
-			let size = sizeParam? sizeParam: 60;
+			document.getElementById("content").style.fontSize = urlParams.get('size');
+
+			// Create donut and draw
+			let size = 60;
 			let width = size;
 			let height = size;
 			let center = new Vector();
