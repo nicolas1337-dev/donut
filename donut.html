@@ -177,8 +177,11 @@
 			}
 
 			// Create donut and draw
-			let width = 60;
-			let height = 60;
+			const urlParams = new URLSearchParams(window.location.search);
+			const sizeParam = urlParams.get('size');
+			let size = sizeParam? sizeParam: 60;
+			let width = size;
+			let height = size;
 			let center = new Vector();
 			center.x = width/2; center.y= height/2;
 			let donut = new Donut(center,width/3.4,width/6);
