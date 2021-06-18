@@ -146,26 +146,22 @@
 							let x = Math.floor(point.x); let y = Math.floor(point.y); let depth = point.z;
 
 							let data = buffer[`${x}:${y}`];
-							if (data) {
-								if (data[1] > depth) { // stencil test
-									brightness = data[0];
-									depth = data[1];
-								}
-							} 
-							buffer[`${x}:${y}`] = [brightness,depth];
+							let update = true;
+							if (data && data[1] > depth) update = false; // stencil test
+							if (update) buffer[`${x}:${y}`] = [brightness,depth];
 						}
 					}
 
 					// process buffer to text
 					let text = '';
-					let luminanceIndex = '.,-~:;=!*#$@';
+					let luminance = '.,-~:;=!*#$@';
 					for (let y = 0 ; y < height; y+=2) {
 						for (let x = 0 ; x < width; x++) {
 							let data = buffer[`${x}:${y}`];
 							if (data) {
 								let brightness = data[0];
-								let luminance = Math.floor(brightness * luminanceIndex.length);
-								text += luminanceIndex[luminance];
+								let luminanceIndex = Math.floor(brightness * luminance.length);
+								text += luminance[luminanceIndex];
 							} else {
 								text += ' ';
 							}
