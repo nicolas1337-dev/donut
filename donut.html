@@ -115,10 +115,10 @@
 					let buffer = {}
 					this.A += 0.048;
 					this.B += 0.056;
+					this.setRotationA(Math.cos(this.A),Math.sin(this.A));
+					this.setRotationB(Math.cos(this.B),Math.sin(this.B));
 					for (let alpha = 0; alpha < 6.28; alpha += this.step) {
 						this.setRevolutionMatrix(Math.cos(alpha),Math.sin(alpha));
-						this.setRotationA(Math.cos(this.A),Math.sin(this.A));
-						this.setRotationB(Math.cos(this.B),Math.sin(this.B));
 						for (let teta = 0; teta < 6.28; teta += this.step) {
 							// init
 							let point = new Vector();
